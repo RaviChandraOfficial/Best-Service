@@ -1,67 +1,54 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { FaUser, FaLock, FaUserCircle } from 'react-icons/fa';
+import { MdBusinessCenter, MdLocationOn } from 'react-icons/md';
 
 const Register = () => {
     const navigate = useNavigate();
-    const [accountType, setAccountType] = useState('customer');
-    const [error, setError] = useState('');
     const [formData, setFormData] = useState({
+        id: 0,
         username: '',
         password: '',
+        user_type: 'service_center',
         location: '',
         rating: 4.5,
         price_range: '$$',
         bike_types: '',
         service_type: 'authorized'
     });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        
+        setLoading(true);
+
         try {
-            if (accountType === 'customer') {
-                const response = await axios.post('http://localhost:8080/register', {
-                    username: formData.username,
-                    password: formData.password,
-                    user_type: 'customer'
-                });
-                console.log('User registration response:', response.data);
-                navigate('/login');
-            } else {
-                // Exactly matching the ServiceCenter struct including id
-                const serviceCenterData = {
-                    id: 0,  // Added this field as it's required by the struct
-                    username: formData.username,
-                    password: formData.password,
-                    location: formData.location,
-                    rating: 4.5,
-                    price_range: "$$",
-                    bike_types: formData.bike_types,
-                    service_type: formData.service_type
-                };
-                
-                // Log the exact data being sent
-                console.log('Sending service center data:', JSON.stringify(serviceCenterData, null, 2));
-                
-                const response = await axios.post('http://localhost:8080/register-service-center', serviceCenterData);
-                console.log('Service center registration response:', response.data);
+            console.log('Sending registration data:', formData);
+
+            const response = await axios.post('http://localhost:8080/register-service-center', formData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Registration response:', response);
+
+            if (response.status === 200 || response.status === 201) {
+                alert('Registration successful! Please login.');
                 navigate('/login');
             }
         } catch (err) {
             console.error('Registration error:', err);
-            // Add more detailed error logging
-            if (err.response) {
-                console.error('Error response data:', err.response.data);
-                console.error('Error response status:', err.response.status);
-                console.error('Error response headers:', err.response.headers);
-            }
-            setError(err.response?.data?.error || 'Registration failed. Please try again.');
+            setError(err.response?.data?.message || 'Registration failed. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleInputChange = (e) => {
+    const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
@@ -69,111 +56,117 @@ const Register = () => {
     };
 
     return (
-        <div className="glass-container">
-            <h2>Create Account</h2>
-            <div className="type-selector">
-                <button 
-                    className={accountType === 'customer' ? 'active' : ''}
-                    onClick={() => setAccountType('customer')}
-                >
-                    Customer
-                </button>
-                <button 
-                    className={accountType === 'service_center' ? 'active' : ''}
-                    onClick={() => setAccountType('service_center')}
-                >
-                    Service Center
-                </button>
-            </div>
-            {error && <div className="error-message">{error}</div>}
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <input
-                        type="text"
-                        name="username"
-                        placeholder="Username"
-                        value={formData.username}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </div>
-                <div className="form-group">
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </div>
-                {accountType === 'service_center' && (
-                    <>
+        <div className="auth-container">
+            <div className="auth-content">
+                <div className="auth-card">
+                    <div className="auth-header">
+                        <h1>Register</h1>
+                        <p>Create your account today!</p>
+                    </div>
+                    <div className="auth-type-selector">
+                        <button 
+                            className={`type-button ${formData.user_type === 'customer' ? 'active' : ''}`}
+                            onClick={() => setFormData({ ...formData, user_type: 'customer' })}
+                        >
+                            <FaUserCircle /> Customer
+                        </button>
+                        <button 
+                            className={`type-button ${formData.user_type === 'service_center' ? 'active' : ''}`}
+                            onClick={() => setFormData({ ...formData, user_type: 'service_center' })}
+                        >
+                            <MdBusinessCenter /> Service Center
+                        </button>
+                    </div>
+                    
+                    {error && <div className="error-message">{error}</div>}
+                    
+                    <form onSubmit={handleSubmit} className="auth-form">
                         <div className="form-group">
+                            <label>Account Type:</label>
+                            <select 
+                                value={formData.user_type}
+                                onChange={(e) => setFormData({ ...formData, user_type: e.target.value })}
+                            >
+                                <option value="customer">Customer</option>
+                                <option value="service_center">Service Center</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>Username:</label>
+                            <input
+                                type="text"
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                required
+                                placeholder="e.g., speed_motors"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Password:</label>
+                            <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                                placeholder="Enter secure password"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Location:</label>
                             <input
                                 type="text"
                                 name="location"
-                                placeholder="Location"
                                 value={formData.location}
-                                onChange={handleInputChange}
+                                onChange={handleChange}
                                 required
+                                placeholder="e.g., New York"
                             />
                         </div>
                         <div className="form-group">
+                            <label>Bike Types (comma separated):</label>
                             <input
                                 type="text"
                                 name="bike_types"
-                                placeholder="Bike Types (e.g., Sport, Cruiser)"
                                 value={formData.bike_types}
-                                onChange={handleInputChange}
+                                onChange={handleChange}
                                 required
+                                placeholder="e.g., Sport, Cruiser"
                             />
                         </div>
                         <div className="form-group">
+                            <label>Price Range:</label>
                             <select
                                 name="price_range"
                                 value={formData.price_range}
-                                onChange={handleInputChange}
-                                required
-                                style={{
-                                    width: '100%',
-                                    padding: '12px',
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    color: 'white'
-                                }}
+                                onChange={handleChange}
                             >
                                 <option value="$">$</option>
                                 <option value="$$">$$</option>
+                                <option value="$$$">$$$</option>
                             </select>
                         </div>
                         <div className="form-group">
+                            <label>Service Type:</label>
                             <select
                                 name="service_type"
                                 value={formData.service_type}
-                                onChange={handleInputChange}
-                                required
-                                style={{
-                                    width: '100%',
-                                    padding: '12px',
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    color: 'white'
-                                }}
+                                onChange={handleChange}
                             >
-                                <option value="authorized">authorized</option>
-                                <option value="private">private</option>
+                                <option value="authorized">Authorized</option>
+                                <option value="private">Private</option>
                             </select>
                         </div>
-                    </>
-                )}
-                <button type="submit">Register</button>
-            </form>
-            <p style={{ textAlign: 'center', marginTop: '1rem', color: 'white' }}>
-                Already have an account? <a href="/login">Login here</a>
-            </p>
+                        <button type="submit" className="auth-button" disabled={loading}>
+                            {loading ? 'Registering...' : 'Sign Up'}
+                        </button>
+                    </form>
+                    <div className="auth-footer">
+                        <p>Already have an account? <span onClick={() => navigate('/login')} className="link">Login here</span></p>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
