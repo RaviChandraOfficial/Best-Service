@@ -1,0 +1,20 @@
+[package]
+name = "bestservice"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+actix-web = "4.0"          # Actix Web framework
+actix-rt = "2.5"           # Actix runtime
+serde = { version = "1.0", features = ["derive"] }  # Serde for serialization
+serde_json = "1.0"         # Serde JSON for JSON parsing
+sqlx = { version = "0.8.3", features = ["postgres", "runtime-tokio-rustls"] } # SQLx with PostgreSQL support
+dotenv = "0.15"            # For reading environment variables
+jsonwebtoken = "9.3.1"       # JSON Web Token (JWT) for authentication
+tokio = { version = "1", features = ["full"] } # Tokio runtime for async support
+actix-cors = "0.7.1"         # CORS support for Actix Web v4
+argon2 = "0.5.3"
+rand_core = "0.9.3"
+env_logger = "0.11"
+chrono = { version = "0.4", features = ["serde"] }
+bcrypt = "0.17.0"
