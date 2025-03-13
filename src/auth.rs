@@ -192,6 +192,7 @@ fn generate_jwt(username: &str, user_type: &str) -> String {
 // 🔹 Register User
 pub async fn register_user(pool: web::Data<PgPool>, user: web::Json<RegisterRequest>) -> impl Responder {
     let hashed_password = hash_password(&user.password);
+    println!("user registration ra nanna");
 
     let result = sqlx::query("INSERT INTO users (username, password, user_type) VALUES ($1, $2, $3)")
         .bind(&user.username)
@@ -208,6 +209,8 @@ pub async fn register_user(pool: web::Data<PgPool>, user: web::Json<RegisterRequ
 
 // 🔹 Login User
 pub async fn login_user(pool: web::Data<PgPool>, user: web::Json<LoginRequest>) -> impl Responder {
+
+    println!("user login ra nanna");
     let result = sqlx::query_as::<_, crate::models::User>("SELECT * FROM users WHERE username = $1")
         .bind(&user.username)
         .fetch_optional(pool.get_ref())
@@ -233,6 +236,8 @@ pub async fn login_user(pool: web::Data<PgPool>, user: web::Json<LoginRequest>) 
 
 // 🔹 Login Service Center (Fixed!)
 pub async fn login_service_center(pool: web::Data<PgPool>, user: web::Json<LoginRequest>) -> impl Responder {
+
+    println!("service center login");
     let result = sqlx::query_as::<_, crate::models::ServiceCenter>("SELECT * FROM service_centers WHERE username = $1")
         .bind(&user.username)
         .fetch_optional(pool.get_ref())
@@ -262,6 +267,7 @@ pub async fn register_service_center(
     center: web::Json<ServiceCenter>,
 ) -> impl Responder {
     let hashed_password = hash_password(&center.password);
+    println!("Registration ra nanna");
 
     let result = sqlx::query(
         "INSERT INTO service_centers (username, location, rating, price_range, bike_types, service_type, password)
